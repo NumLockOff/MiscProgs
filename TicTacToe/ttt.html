@@ -10,26 +10,100 @@
     <script>
         const canvas = document.getElementById("canvas");
         const stat = document.getElementById("status");
+        var arrBoxMain = initialize();
+        //for (iy = 0; iy < 3; iy++) {
+        //    for (ix = 0; ix < 3; ix++) {
+        //        stat.innerText += "," + getXY(arrBoxMain, ix, iy);
+        //    }
+        //}
+        var nCurMoveVal = 100;
+        const ctx = canvas.getContext("2d");
+        drawGrid();
         canvas.addEventListener('mousedown', function (e) {
             var pt = MouseEventToCanvesPoint(canvas, e);
             var cellx = Math.floor(pt.px / 180);
             var celly = Math.floor(pt.py / 180);
+            setXY(arrBoxMain, cellx, celly, nCurMoveVal);
+            nCurMoveVal = -nCurMoveVal;
+            drawGrid();
+            var nWinner = calcWinner(arrBoxMain);
+            if (nWinner != 0) {
+                alert("Game Over");
+                location.reload();
+            }
 
-            alert("(" + pt.px.toString() + ", " + pt.py.toString() + ")\r\n" + cellx + "\r\n" + celly);
+
         });
         canvas.addEventListener("mousemove", function (e) {
-            stat.innerText = "(" + e.clientX.toString() + ", " + e.clientY.toString() + ")";
+            stat.innerText += "(" + e.clientX.toString() + ", " + e.clientY.toString() + ")";
         });
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "Bisque";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        let radius = canvas.height / 2;
-        //ctx.translate(radius, radius);
-        radius = radius * 0.90
-        //setInterval(drawClock, 1000);
-        drawGrid();
+
+
+        function getXY(arrParam, pxParam, pyParam) {
+            return arrParam[pyParam * 3 + pxParam];
+        }
+        function setXY(arrParam, pxParam, pyParam, value) {
+            arrParam[pyParam * 3 + pxParam] = value;
+        }
+        function calcWinner(arrParam) {
+            var nWinnerVal = 0;
+            var nSum = 0;
+            for (iy = 0; iy < 3; iy++) {
+                //Do Horizontal Sums
+                nSum = 0;
+                for (ix = 0; ix < 3; ix++) {
+                    nSum += getXY(arrParam, ix, iy);
+                }
+                nWinnerVal = getWinnerValFromSum(nSum);
+                if (nWinnerVal != 0) {
+                    break;
+                }
+            }
+
+            if (nWinnerVal == 0) {
+                for (ix = 0; ix < 3; ix++) {
+                    //Do Vertical Sums
+                    nSum = 0;
+                    for (iy = 0; iy < 3; iy++) {
+                        nSum += getXY(arrParam, ix, iy);
+                    }
+                    nWinnerVal = getWinnerValFromSum(nSum);
+                    if (nWinnerVal != 0) {
+                        break;
+                    }
+                }
+                if (nWinnerVal == 0) {
+                    // Do Diagonals
+                    for (i = 0; i < 2; i++) {
+                        nSum = 0;
+                        for (k = 0; k < 3; k++) {
+                            nSum += getXY(arrParam, i == 0 ? k : 2 - k, k);
+                        }
+                        nWinnerVal = getWinnerValFromSum(nSum);
+                        if (nWinnerVal != 0) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return nWinnerVal;
+        }
+        function getWinnerValFromSum(nSumParam) {
+            var nWinnerVal = 0;
+            if (nSumParam == 300) {
+                nWinnerVal = 1;
+            } else {
+                if (nSumParam == -300) {
+                    nWinnerVal = -1;
+                }
+            }
+            return nWinnerVal;
+        }
         function drawGrid() {
-            for (var jx = 1; jx < 3; jx++) {
+            ctx.fillStyle = "Bisque";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (jx = 1; jx < 3; jx++) {
                 ctx.beginPath();
                 ctx.lineWidth = 1;
                 //ctx.lineCap = "round";
@@ -37,7 +111,7 @@
                 ctx.lineTo(jx * 180, canvas.height);
                 ctx.stroke();
             }
-            for (var jy = 0; jy < 4; jy++) {
+            for (jy = 0; jy < 4; jy++) {
                 ctx.beginPath();
                 ctx.lineWidth = 1;
                 //ctx.lineCap = "round";
@@ -45,13 +119,19 @@
                 ctx.lineTo(canvas.width, jy * 180);
                 ctx.stroke();
             }
+            for (jx = 0; jx < 3; jx++) {
+                for (jy = 0; jy < 3; jy++) {
+                    var nVal = getXY(arrBoxMain, jx, jy);
+                    ctx.strokeText(nVal.toString(), jx * 180 + 90, jy * 180 + 90);
+                }
+
+
+            }
+
 
         }
 
-        function Point(pxParam, pyParam) {
-            this.px = pxParam;
-            this.py = pyParam;
-        }
+
         function MouseEventToCanvesPoint(canvasParam, evtParam) {
             var posx = 0;
             var posy = 0;
@@ -74,6 +154,18 @@
             var ptRet = new Point(posx, posy);
             return ptRet;
         }
+        function Point(pxParam, pyParam) {
+            this.px = pxParam;
+            this.py = pyParam;
+        }
+        function initialize() {
+            var arrBox = [];
+            for (i = 0; i < 9; i++) {
+                arrBox.push(i);
+            }
+            return arrBox;
+        }
+
     </script>
 
 </body>
