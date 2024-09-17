@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html>
+<body>
+
+    <canvas id="canvas" width="540" height="540" style="border:1px solid #000000;">
+        Sorry, your browser does not support canvas.
+    </canvas>
+    <div id="status"></div>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const stat = document.getElementById("status");
+        canvas.addEventListener('mousedown', function (e) {
+            var pt = MouseEventToCanvesPoint(canvas, e);
+            var cellx = Math.floor(pt.px / 180);
+            var celly = Math.floor(pt.py / 180);
+
+            alert("(" + pt.px.toString() + ", " + pt.py.toString() + ")\r\n" + cellx + "\r\n" + celly);
+        });
+        canvas.addEventListener("mousemove", function (e) {
+            stat.innerText = "(" + e.clientX.toString() + ", " + e.clientY.toString() + ")";
+        });
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "Bisque";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let radius = canvas.height / 2;
+        //ctx.translate(radius, radius);
+        radius = radius * 0.90
+        //setInterval(drawClock, 1000);
+        drawGrid();
+        function drawGrid() {
+            for (var jx = 1; jx < 3; jx++) {
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                //ctx.lineCap = "round";
+                ctx.moveTo(jx * 180, 0);
+                ctx.lineTo(jx * 180, canvas.height);
+                ctx.stroke();
+            }
+            for (var jy = 0; jy < 4; jy++) {
+                ctx.beginPath();
+                ctx.lineWidth = 1;
+                //ctx.lineCap = "round";
+                ctx.moveTo(0, jy * 180);
+                ctx.lineTo(canvas.width, jy * 180);
+                ctx.stroke();
+            }
+
+        }
+
+        function Point(pxParam, pyParam) {
+            this.px = pxParam;
+            this.py = pyParam;
+        }
+        function MouseEventToCanvesPoint(canvasParam, evtParam) {
+            var posx = 0;
+            var posy = 0;
+            if (evtParam.pageX) {
+                posx = evtParam.pageX;
+            } else if (evtParam.clientX) {
+                posx = evtParam.clientX + document.body.scrollLeft
+                    + document.documentElement.scrollLeft;
+            }
+            posx = posx - canvasParam.offsetLeft;
+
+            if (evtParam.pageY) {
+                posy = evtParam.pageY;
+            } else if (evtParam.clientY) {
+                posy = evtParam.clientY + document.body.scrollTop
+                    + document.documentElement.scrollTop;
+            }
+            posy = posy - canvasParam.offsetTop;
+
+            var ptRet = new Point(posx, posy);
+            return ptRet;
+        }
+    </script>
+
+</body>
+</html>
