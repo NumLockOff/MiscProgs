@@ -2,31 +2,35 @@
 <html>
 <body>
 
-    <canvas id="canvas" width="540" height="540" style="border:1px solid #000000;">
-        Sorry, your browser does not support canvas.
+    <canvas id="__canvas" width="540" height="540" style="border:1px solid #000000;">
+        Sorry, your browser does not support __canvas.
     </canvas>
+    <button type="button" onclick="playGame();">Click Me!</button>
     <div id="status"></div>
 
     <script>
-        const canvas = document.getElementById("canvas");
-        const stat = document.getElementById("status");
-        var arrBoxMain = initialize();
+        // Globals prefixed with __
+        const __canvas = document.getElementById("__canvas");
+        const __statDiv = document.getElementById("status");
+        var __arrBoxMain = initialize();
+        var __nCurMoveVal = 100;
+        const __ctx = __canvas.getContext("2d");
         //for (iy = 0; iy < 3; iy++) {
         //    for (ix = 0; ix < 3; ix++) {
-        //        stat.innerText += "," + getXY(arrBoxMain, ix, iy);
+        //        __statDiv.innerText += "," + getXY(__arrBoxMain, ix, iy);
         //    }
         //}
-        var nCurMoveVal = 100;
-        const ctx = canvas.getContext("2d");
+
         drawGrid();
-        canvas.addEventListener('mousedown', function (e) {
-            var pt = MouseEventToCanvesPoint(canvas, e);
+        playGame(null);
+        __canvas.addEventListener('mousedown', function (e) {
+            var pt = MouseEventToCanvesPoint(__canvas, e);
             var cellx = Math.floor(pt.px / 180);
             var celly = Math.floor(pt.py / 180);
-            setXY(arrBoxMain, cellx, celly, nCurMoveVal);
-            nCurMoveVal = -nCurMoveVal;
+            setXY(__arrBoxMain, cellx, celly, __nCurMoveVal);
+            __nCurMoveVal = -__nCurMoveVal;
             drawGrid();
-            var nWinner = calcWinner(arrBoxMain);
+            var nWinner = calcWinner(__arrBoxMain);
             if (nWinner != 0) {
                 alert("Game Over");
                 location.reload();
@@ -34,25 +38,25 @@
 
 
         });
-        canvas.addEventListener("mousemove", function (e) {
-            stat.innerText += "(" + e.clientX.toString() + ", " + e.clientY.toString() + ")";
+        __canvas.addEventListener("mousemove", function (e) {
+            __statDiv.innerText += "(" + e.clientX.toString() + ", " + e.clientY.toString() + ")";
         });
 
 
-        function getXY(arrParam, pxParam, pyParam) {
-            return arrParam[pyParam * 3 + pxParam];
+        function getXY(arrP, pxP, pyP) {
+            return arrP[pyP * 3 + pxP];
         }
-        function setXY(arrParam, pxParam, pyParam, value) {
-            arrParam[pyParam * 3 + pxParam] = value;
+        function setXY(arrP, pxP, pyP, value) {
+            arrP[pyP * 3 + pxP] = value;
         }
-        function calcWinner(arrParam) {
+        function calcWinner(arrP) {
             var nWinnerVal = 0;
             var nSum = 0;
-            for (iy = 0; iy < 3; iy++) {
+            for (let iy = 0; iy < 3; iy++) {
                 //Do Horizontal Sums
                 nSum = 0;
-                for (ix = 0; ix < 3; ix++) {
-                    nSum += getXY(arrParam, ix, iy);
+                for (let ix = 0; ix < 3; ix++) {
+                    nSum += getXY(arrP, ix, iy);
                 }
                 nWinnerVal = getWinnerValFromSum(nSum);
                 if (nWinnerVal != 0) {
@@ -61,111 +65,162 @@
             }
 
             if (nWinnerVal == 0) {
-                for (ix = 0; ix < 3; ix++) {
+                for (let ix = 0; ix < 3; ix++) {
                     //Do Vertical Sums
                     nSum = 0;
-                    for (iy = 0; iy < 3; iy++) {
-                        nSum += getXY(arrParam, ix, iy);
+                    for (let iy = 0; iy < 3; iy++) {
+                        nSum += getXY(arrP, ix, iy);
                     }
                     nWinnerVal = getWinnerValFromSum(nSum);
                     if (nWinnerVal != 0) {
                         break;
                     }
                 }
-                if (nWinnerVal == 0) {
-                    // Do Diagonals
-                    for (i = 0; i < 2; i++) {
-                        nSum = 0;
-                        for (k = 0; k < 3; k++) {
-                            nSum += getXY(arrParam, i == 0 ? k : 2 - k, k);
-                        }
-                        nWinnerVal = getWinnerValFromSum(nSum);
-                        if (nWinnerVal != 0) {
-                            break;
-                        }
+            }
+            if (nWinnerVal == 0) {
+                // Do Diagonals
+                for (let i = 0; i < 2; i++) {
+                    nSum = 0;
+                    for (let k = 0; k < 3; k++) {
+                        nSum += getXY(arrP, i == 0 ? k : 2 - k, k);
+                    }
+                    nWinnerVal = getWinnerValFromSum(nSum);
+                    if (nWinnerVal != 0) {
+                        break;
                     }
                 }
             }
+
             return nWinnerVal;
         }
-        function getWinnerValFromSum(nSumParam) {
+        function getWinnerValFromSum(nSumP) {
             var nWinnerVal = 0;
-            if (nSumParam == 300) {
-                nWinnerVal = 1;
+            if (nSumP == 300) {
+                nWinnerVal = 300;
             } else {
-                if (nSumParam == -300) {
-                    nWinnerVal = -1;
+                if (nSumP == -300) {
+                    nWinnerVal = -300;
                 }
             }
             return nWinnerVal;
         }
         function drawGrid() {
-            ctx.fillStyle = "Bisque";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            __ctx.fillStyle = "Bisque";
+            __ctx.fillRect(0, 0, __canvas.width, __canvas.height);
 
-            for (jx = 1; jx < 3; jx++) {
-                ctx.beginPath();
-                ctx.lineWidth = 1;
-                //ctx.lineCap = "round";
-                ctx.moveTo(jx * 180, 0);
-                ctx.lineTo(jx * 180, canvas.height);
-                ctx.stroke();
+            for (let jx = 1; jx < 3; jx++) {
+                __ctx.beginPath();
+                __ctx.lineWidth = 1;
+                //__ctx.lineCap = "round";
+                __ctx.moveTo(jx * 180, 0);
+                __ctx.lineTo(jx * 180, __canvas.height);
+                __ctx.stroke();
             }
-            for (jy = 0; jy < 4; jy++) {
-                ctx.beginPath();
-                ctx.lineWidth = 1;
-                //ctx.lineCap = "round";
-                ctx.moveTo(0, jy * 180);
-                ctx.lineTo(canvas.width, jy * 180);
-                ctx.stroke();
+            for (let jy = 0; jy < 4; jy++) {
+                __ctx.beginPath();
+                __ctx.lineWidth = 1;
+                //__ctx.lineCap = "round";
+                __ctx.moveTo(0, jy * 180);
+                __ctx.lineTo(__canvas.width, jy * 180);
+                __ctx.stroke();
             }
-            for (jx = 0; jx < 3; jx++) {
-                for (jy = 0; jy < 3; jy++) {
-                    var nVal = getXY(arrBoxMain, jx, jy);
-                    ctx.strokeText(nVal.toString(), jx * 180 + 90, jy * 180 + 90);
+            for (let jx = 0; jx < 3; jx++) {
+                for (let jy = 0; jy < 3; jy++) {
+                    var nVal = getXY(__arrBoxMain, jx, jy);
+                    __ctx.strokeText(nVal.toString(), jx * 180 + 90, jy * 180 + 90);
                 }
-
-
             }
 
 
         }
 
 
-        function MouseEventToCanvesPoint(canvasParam, evtParam) {
+        function MouseEventToCanvesPoint(canvasP, evtP) {
             var posx = 0;
             var posy = 0;
-            if (evtParam.pageX) {
-                posx = evtParam.pageX;
-            } else if (evtParam.clientX) {
-                posx = evtParam.clientX + document.body.scrollLeft
+            if (evtP.pageX) {
+                posx = evtP.pageX;
+            } else if (evtP.clientX) {
+                posx = evtP.clientX + document.body.scrollLeft
                     + document.documentElement.scrollLeft;
             }
-            posx = posx - canvasParam.offsetLeft;
+            posx = posx - canvasP.offsetLeft;
 
-            if (evtParam.pageY) {
-                posy = evtParam.pageY;
-            } else if (evtParam.clientY) {
-                posy = evtParam.clientY + document.body.scrollTop
+            if (evtP.pageY) {
+                posy = evtP.pageY;
+            } else if (evtP.clientY) {
+                posy = evtP.clientY + document.body.scrollTop
                     + document.documentElement.scrollTop;
             }
-            posy = posy - canvasParam.offsetTop;
+            posy = posy - canvasP.offsetTop;
 
-            var ptRet = new Point(posx, posy);
+            var ptRet = new ObjPoint(posx, posy);
             return ptRet;
         }
-        function Point(pxParam, pyParam) {
-            this.px = pxParam;
-            this.py = pyParam;
+        function ObjPoint(pxP, pyP) {
+            this.px = pxP;
+            this.py = pyP;
         }
         function initialize() {
             var arrBox = [];
-            for (i = 0; i < 9; i++) {
-                arrBox.push(i);
+            for (let i = 0; i < 9; i++) {
+                arrBox.push(0);
             }
             return arrBox;
         }
+        function ObjMove(pointP, nScoreP) {
+            this.point = pointP
+            this.nScore = nScoreP
+        }
+        function playGame(ptStart) {
+            var jDepth = 0;
+            var arrMoves = [];
+            var arrBox = __arrBoxMain.slice();
+            if (ptStart == null) {
+                ptStart = new ObjPoint(0, 0);
+            } else {
+                jDepth = 1;
+            }
+            var oMoveNext = getNextMove(jDepth, arrMoves, arrBox, __nCurMoveVal);
+        }
+        function getNextMove(jDepthP, arrMovesP, arrBoxP, nCurMoveValP) {
+            var moveBest = null;
+            var nWinner;
+            nWinner = calcWinner(arrBoxP);
+            if ((nWinner != 0) || (jDepthP == 9)) {
+                let moveLast = arrMovesP[arrMovesP.length - 1];
+                if (moveBest == null) {
+                    moveBest = new ObjMove(moveLast.point, nWinner);
+                } else
+                    if (moveBest.nScore < moveLast.nScore) {
+                        moveBest.point = moveLast.point;
+                        moveBest.nScore = moveLast.nScore;
+                    }
 
+            } else {
+                for (let iy = 0; iy < 3; iy++) {
+                    for (let ix = 0; ix < 3; ix++) {
+                        if (getXY(arrBoxP, ix, iy) == 0) {
+                            setXY(arrBoxP, ix, iy, nCurMoveValP);
+                            let ptNext = new ObjPoint(ix, iy);
+                            let moveCur = new ObjMove(ptNext, 0);
+                            arrMovesP.push(moveCur);
+                            nCurMoveValP = -nCurMoveValP;
+                            jDepthP++;
+                            let moveNext = getNextMove(jDepthP, arrMovesP, arrBoxP, nCurMoveValP);
+                            if (moveBest == null) {
+                                moveBest = moveNext;
+                            } else if (moveBest.nScore < moveNext.nScore) {
+                                moveBest = moveNext;
+                            }
+
+                        }
+                    }
+                }
+            }
+            return moveBest;
+
+        }
     </script>
 
 </body>
