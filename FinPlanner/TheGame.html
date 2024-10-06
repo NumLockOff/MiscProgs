@@ -1,0 +1,162 @@
+﻿<!DOCTYPE html>
+<html>
+<body>
+    <h1 id="elePlayer">Player XYZ</h1>
+    <h2 id="eleCash"></h2>
+    <h2 id="eleHolding"></h2>
+    <canvas id="__canvas" width="540" height="540" style="border:1px solid #000000;">
+        Sorry, your browser does not support __canvas.
+    </canvas>
+    <button type="button" onclick="playGame();">Click Me!</button>
+
+    <div id="status"></div>
+
+    <script>
+        // Globals prefixed with __
+        const __canvas = document.getElementById("__canvas");
+        const __statDiv = document.getElementById("status");
+        var __arrBoxMain = initialize();
+        var __nCurMoveVal = 100;
+        const __ctx = __canvas.getContext("2d");
+        var __player = { Cash: 100000, Holding: 200000 }
+        var __cards = [];
+        __cards.push({ Id: 0, Text: "You won a lottery of ", Fixed: null, "Min": 3000, "Mac": 9000 });
+        __cards.push({ Id: 1, Text: "You inherited ", Fixed: null, "Min": 3000, "Mac": 9000 });
+        __cards.push({ Id: 2, Text: "THE COMPANY gave dividend ", "Min": 12000, "Mac": 24000 });
+        __cards.push({ Id: 3, Text: "You paid tax ", "Min": -12000, "Mac": -3000 });
+        __cards.push({ Id: 4, Text: "You bought stock in THE COMPANY ", Fixed: -10000, Stock: 10000 });
+        __cards.push({ Id: 5, Text: "THE COMPANY stock price gained ", "MinP": 30, "MacP": 75 });
+        __cards.push({ Id: 6, Text: "THE COMPANY stock price crashed ", "MinP": -75, "MacP": -30 });
+
+        //for (iy = 0; iy < 3; iy++) {
+        //    for (ix = 0; ix < 3; ix++) {
+        //        __statDiv.innerText += "," + getXY(__arrBoxMain, ix, iy);
+        //    }
+        //}
+
+        drawGrid();
+        __canvas.addEventListener('mousedown', function (e) {
+            let pt = MouseEventToCanvesPoint(__canvas, e);
+            let cellx = Math.floor(pt.px / 180);
+            let celly = Math.floor(pt.py / 180);
+            let card = __cards[getRandom(0, 6)];
+            doCardAction(card);
+            setXY(__arrBoxMain, cellx, celly, __nCurMoveVal);
+            __nCurMoveVal = -__nCurMoveVal;
+            drawGrid();
+
+
+        });
+        //__canvas.addEventListener("mousemove", function (e) {
+        //    __statDiv.innerText += "(" + e.clientX.toString() + ", " + e.clientY.toString() + ")";
+        //});
+        function doCardAction(card) {
+            let id = card.Id;
+            let nAmount = 0;
+            let sText = "";
+            switch (id) {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    nAmount = getRandom(card.Min, card.Mac);
+                    __player.Cash += nAmount;
+                    sText = card.Text + nAmount;
+                    break;
+                case 4:
+                    __player.Cash += card.Fixed;
+                    __player.Holding += card.Stock;
+                    sText = card.Text + card.Fixed;
+                    break;
+                case 5:
+                case 6:
+                    let nChange = getRandom(card.MinP, card.MacP);
+                    __player.Holding += Math.round(__player.Holding * nChange / 100);
+                    sText = card.Text + nChange + " %" ;
+                    break;
+            }
+            alert(sText);
+        }
+        function getRandom(jMin, jMac) {
+            let jRet = jMin + Math.floor(Math.random() * (jMac - jMin + 1));
+            return jRet;
+        }
+        function getXY(arrP, pxP, pyP) {
+            return arrP[pyP * 3 + pxP];
+        }
+        function setXY(arrP, pxP, pyP, value) {
+            arrP[pyP * 3 + pxP] = value;
+        }
+
+
+        function drawGrid() {
+
+            document.getElementById("eleCash").innerHTML = "Cash: " + __player.Cash;
+            document.getElementById("eleHolding").innerHTML = "Holding:" + __player.Holding;
+            __ctx.fillStyle = "Bisque";
+            __ctx.fillRect(0, 0, __canvas.width, __canvas.height);
+
+            for (let jx = 1; jx < 3; jx++) {
+                __ctx.beginPath();
+                __ctx.lineWidth = 1;
+                //__ctx.lineCap = "round";
+                __ctx.moveTo(jx * 180, 0);
+                __ctx.lineTo(jx * 180, __canvas.height);
+                __ctx.stroke();
+            }
+            for (let jy = 0; jy < 4; jy++) {
+                __ctx.beginPath();
+                __ctx.lineWidth = 1;
+                //__ctx.lineCap = "round";
+                __ctx.moveTo(0, jy * 180);
+                __ctx.lineTo(__canvas.width, jy * 180);
+                __ctx.stroke();
+            }
+            for (let jx = 0; jx < 3; jx++) {
+                for (let jy = 0; jy < 3; jy++) {
+                    var nVal = getXY(__arrBoxMain, jx, jy);
+                    __ctx.strokeText(nVal.toString(), jx * 180 + 90, jy * 180 + 90);
+                }
+            }
+
+
+        }
+
+
+        function MouseEventToCanvesPoint(canvasP, evtP) {
+            var posx = 0;
+            var posy = 0;
+            if (evtP.pageX) {
+                posx = evtP.pageX;
+            } else if (evtP.clientX) {
+                posx = evtP.clientX + document.body.scrollLeft
+                    + document.documentElement.scrollLeft;
+            }
+            posx = posx - canvasP.offsetLeft;
+
+            if (evtP.pageY) {
+                posy = evtP.pageY;
+            } else if (evtP.clientY) {
+                posy = evtP.clientY + document.body.scrollTop
+                    + document.documentElement.scrollTop;
+            }
+            posy = posy - canvasP.offsetTop;
+
+            var ptRet = new ObjPoint(posx, posy);
+            return ptRet;
+        }
+        function ObjPoint(pxP, pyP) {
+            this.px = pxP;
+            this.py = pyP;
+        }
+        function initialize() {
+            var arrBox = [];
+            for (let i = 0; i < 9; i++) {
+                arrBox.push("?");
+            }
+            return arrBox;
+        }
+    </script>
+
+</body>
+</html>

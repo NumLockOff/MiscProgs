@@ -179,47 +179,48 @@
             if (ptStart == null) {
                 ptStart = new ObjPoint(0, 0);
             } else {
-                jDepth = 1;
+                jDepth = 0;
             }
             var oMoveNext = getNextMove(jDepth, arrMoves, arrBox, __nCurMoveVal);
         }
         function getNextMove(jDepthP, arrMovesP, arrBoxP, nCurMoveValP) {
-            var moveBest = null;
-            var nWinner;
-            nWinner = calcWinner(arrBoxP);
-            if ((nWinner != 0) || (jDepthP == 9)) {
-                let moveLast = arrMovesP[arrMovesP.length - 1];
-                if (moveBest == null) {
-                    moveBest = new ObjMove(moveLast.point, nWinner);
-                } else
-                    if (moveBest.nScore < moveLast.nScore) {
-                        moveBest.point = moveLast.point;
-                        moveBest.nScore = moveLast.nScore;
-                    }
+            let moveReturn = null;
+            let nWinner = calcWinner(arrBoxP);
+            if (nWinner == 0) {
+                if (jDepthP == 8) {
+                    moveReturn = arrMovesP[arrMovesP.length - 1];
+                    moveReturn.nScore = nWinner;
+                } else {
+                    let moveBest = null;
+                    for (let iy = 0; iy < 3; iy++) {
+                        for (let ix = 0; ix < 3; ix++) {
+                            if (getXY(arrBoxP, ix, iy) == 0) {
+                                setXY(arrBoxP, ix, iy, nCurMoveValP);
+                                let ptNext = new ObjPoint(ix, iy);
+                                let moveNew = new ObjMove(ptNext, 0);
+                                arrMovesP.push(moveNew);
+                                let moveNext = getNextMove(jDepthP + 1, arrMovesP, arrBoxP, -nCurMoveValP);
+                                if (moveBest == null) {
+                                    moveBest = moveNext;
+                                } else if (Math.sign(nCurMoveValP) * moveBest.nScore < Math.sign(nCurMoveValP) * moveNext.nScore) {
+                                    moveBest = moveNext;
+                                }
+                                //if (moveNext.nScore != 0) {
+                                //    break;
+                                //}
+                                setXY(arrBoxP, ix, iy, 0);
+                                arrMovesP.pop();
 
-            } else {
-                for (let iy = 0; iy < 3; iy++) {
-                    for (let ix = 0; ix < 3; ix++) {
-                        if (getXY(arrBoxP, ix, iy) == 0) {
-                            setXY(arrBoxP, ix, iy, nCurMoveValP);
-                            let ptNext = new ObjPoint(ix, iy);
-                            let moveCur = new ObjMove(ptNext, 0);
-                            arrMovesP.push(moveCur);
-                            nCurMoveValP = -nCurMoveValP;
-                            jDepthP++;
-                            let moveNext = getNextMove(jDepthP, arrMovesP, arrBoxP, nCurMoveValP);
-                            if (moveBest == null) {
-                                moveBest = moveNext;
-                            } else if (moveBest.nScore < moveNext.nScore) {
-                                moveBest = moveNext;
                             }
-
                         }
                     }
+                    moveReturn = moveBest;
                 }
+            } else {
+                moveReturn = arrMovesP[arrMovesP.length - 1];
+                moveReturn.nScore = nWinner;
             }
-            return moveBest;
-
+            return moveReturn;
         }
     </script>
 
