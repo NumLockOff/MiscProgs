@@ -39,7 +39,7 @@
             let pt = MouseEventToCanvesPoint(__canvas, e);
             let cellx = Math.floor(pt.px / 180);
             let celly = Math.floor(pt.py / 180);
-            let card = __cards[getRandom(0, 6)];
+            let card = __cards[getRandom(0, 7)];
             doCardAction(card);
             setXY(__arrBoxMain, cellx, celly, __nCurMoveVal);
             __nCurMoveVal = -__nCurMoveVal;
